@@ -21,7 +21,7 @@ module "security" {
 module "compute" {
   source             = "./modules/compute"
   instance_count     = 2
-  ami_id             = "ami-0c02fb55956c7d316" 
+  ami_id             = "ami-0ecb62995f68bb549" 
   instance_type      = "t2.micro"
   subnet_ids         = module.vpc.private_subnet_ids
   security_group_ids = [module.security.ec2_sg_id]

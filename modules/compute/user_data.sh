@@ -1,33 +1,44 @@
 #!/bin/bash
 
-yum update -y
-amazon-linux-extras install docker nginx1 -y
-yum install -y openssl
+# --- 1. System Update and Installation (Ubuntu specific) ---
 
+# Update package list
+apt update -y 
 
+# Install required packages (Docker, Nginx, OpenSSL utilities)
+apt install -y docker.io nginx openssl 
+
+# --- 2. Docker Service Configuration ---
+
+# Start and enable Docker
 systemctl start docker
 systemctl enable docker
-usermod -aG docker ec2-user
 
-# 3. Run Docker Container ("Namaste from Container")
-mkdir -p /home/ec2-user/docker-content
-echo "Namaste from Container" > /home/ec2-user/docker-content/index.html
+# Add the current user (ubuntu, or adjust if using a custom AMI) to the docker group
+# Note: For Ubuntu AMIs, the default user is usually 'ubuntu'.
+usermod -aG docker ubuntu 
+
+# Log out and log back in (not possible in User Data), so we proceed as root for the rest of the script.
+
+# --- 3. Run Docker Container ("Namaste from Container") ---
+mkdir -p /home/ubuntu/docker-content
+echo "Namaste from Container" > /home/ubuntu/docker-content/index.html
 
 docker run -d \
   --name namaste-app \
   -p 8080:80 \
-  -v /home/ec2-user/docker-content:/usr/share/nginx/html:ro \
+  -v /home/ubuntu/docker-content:/usr/share/nginx/html:ro \
   --restart always \
   nginx:alpine
 
-# 4. Generate Self-Signed SSL Certificates
+# --- 4. Generate Self-Signed SSL Certificates ---
 mkdir -p /etc/nginx/ssl
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
   -keyout /etc/nginx/ssl/self-signed.key \
   -out /etc/nginx/ssl/self-signed.crt \
   -subj "/C=US/ST=State/L=City/O=Organization/OU=OrgUnit/CN=ec2-instance.yourdomain.com"
 
-# 5. Configure Nginx
+# --- 5. Configure Nginx (No change needed here, Nginx config is portable) ---
 cat <<EOF > /etc/nginx/conf.d/app.conf
 # Redirect HTTP -> HTTPS
 server {
@@ -66,9 +77,11 @@ server {
 }
 EOF
 
-# 6. Start Nginx
+# --- 6. Start Nginx ---
 
-mv /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.bak 2>/dev/null
+# Ubuntu Nginx usually includes a default site config in sites-enabled, not conf.d/default.conf. 
+# We disable the default site to ensure our app.conf is the only configuration.
+rm -f /etc/nginx/sites-enabled/default
 
 systemctl start nginx
 systemctl enable nginx
