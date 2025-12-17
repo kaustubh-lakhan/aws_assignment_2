@@ -36,21 +36,21 @@ mkdir -p /etc/nginx/ssl
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
   -keyout /etc/nginx/ssl/self-signed.key \
   -out /etc/nginx/ssl/self-signed.crt \
-  -subj "/C=US/ST=State/L=City/O=Organization/OU=OrgUnit/CN=ec2-instance.yourdomain.com"
+  -subj "/C=US/ST=State/L=City/O=Organization/OU=OrgUnit/CN=ec2-instance.lakhan.click"
 
 # --- 5. Configure Nginx (No change needed here, Nginx config is portable) ---
 cat <<EOF > /etc/nginx/conf.d/app.conf
 # Redirect HTTP -> HTTPS
 server {
     listen 80;
-    server_name ec2-instance.yourdomain.com ec2-docker.yourdomain.com;
+    server_name ec2-instance.lakhan.click ec2-docker.lakhan.click;
     return 301 https://\$host\$request_uri;
 }
 
 # Serve Static Content (Hello from Instance)
 server {
     listen 443 ssl;
-    server_name ec2-instance.yourdomain.com;
+    server_name ec2-instance.lakhan.click;
 
     ssl_certificate /etc/nginx/ssl/self-signed.crt;
     ssl_certificate_key /etc/nginx/ssl/self-signed.key;
@@ -64,7 +64,7 @@ server {
 # Proxy to Docker (Namaste from Container)
 server {
     listen 443 ssl;
-    server_name ec2-docker.yourdomain.com;
+    server_name ec2-docker.lakhan.click;
 
     ssl_certificate /etc/nginx/ssl/self-signed.crt;
     ssl_certificate_key /etc/nginx/ssl/self-signed.key;

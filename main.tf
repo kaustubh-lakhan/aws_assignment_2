@@ -39,3 +39,5 @@ module "alb" {
 output "application_url" {
   value = "https://${module.alb.alb_dns_name}"
 }
+
+

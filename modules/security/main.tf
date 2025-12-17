@@ -31,6 +31,13 @@ resource "aws_security_group" "alb_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+    egress {
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "-1"
+    cidr_blocks = [aws_security_group.ec2_sg.id]
+    }
 }
 
 resource "aws_security_group" "ec2_sg" {
