@@ -71,6 +71,12 @@ resource "aws_security_group" "ec2_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+egress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] # Or restrict to your VPC CIDR
+  }
 }
 
 output "alb_sg_id" { value = aws_security_group.alb_sg.id }
